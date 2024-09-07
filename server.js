@@ -9,7 +9,7 @@ const cron = require("node-cron");
 const mongoose = require("mongoose");
 const app = express();
 const server = require("http").Server(app);
-const port = 6060;
+const port = 4040;
 
 app.use(cors({ origin: "*" }));
 
