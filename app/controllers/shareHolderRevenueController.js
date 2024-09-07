@@ -1,10 +1,11 @@
 "use strict";
-const Category = require("../models/category");
+const ShareRevenue = require("../models/shareholderRevenue");
 
-exports.listAllCategories = async (req, res) => {
+exports.listAllShareRevenue = async (req, res) => {
   try {
-    let result = await Category.find({ isDeleted: false });
-    let count = await Category.find({ isDeleted: false }).count();
+    let result = await ShareRevenue.find({ isDeleted: false }).populate('relatedShareHolder');
+    console.log(result, "res");
+    let count = await ShareRevenue.find({ isDeleted: false }).count();
     res.status(200).send({
       success: true,
       count: count,
@@ -15,19 +16,22 @@ exports.listAllCategories = async (req, res) => {
   }
 };
 
-exports.getCategory = async (req, res) => {
-  const result = await Category.find({ _id: req.params.id, isDeleted: false });
+exports.getShareRevenue = async (req, res) => {
+  const result = await ShareRevenue.find({
+    _id: req.params.id,
+    isDeleted: false,
+  });
   if (!result)
     return res.status(500).json({ error: true, message: "No Record Found" });
   return res.status(200).send({ success: true, data: result });
 };
 
-exports.createCategory = async (req, res, next) => {
+exports.createShareRevenue = async (req, res, next) => {
   try {
-    const newCategory = new Category(req.body);
-    const result = await newCategory.save();
+    const newRevenue = new ShareRevenue(req.body);
+    const result = await newRevenue.save();
     res.status(200).send({
-      message: "Category create success",
+      message: "Shareholder Revenue create success",
       success: true,
       data: result,
     });
@@ -36,9 +40,9 @@ exports.createCategory = async (req, res, next) => {
   }
 };
 
-exports.updateCategory = async (req, res, next) => {
+exports.updateShareRevenue = async (req, res, next) => {
   try {
-    const result = await Category.findOneAndUpdate(
+    const result = await ShareRevenue.findOneAndUpdate(
       { _id: req.body.id },
       req.body,
       { new: true }
@@ -49,9 +53,9 @@ exports.updateCategory = async (req, res, next) => {
   }
 };
 
-exports.deleteCategory = async (req, res, next) => {
+exports.deleteShareRevenue = async (req, res, next) => {
   try {
-    const result = await Category.findOneAndUpdate(
+    const result = await ShareRevenue.findOneAndUpdate(
       { _id: req.params.id },
       { isDeleted: true },
       { new: true }
