@@ -1,7 +1,7 @@
 "use strict";
 const Withdraw = require("../models/withdraw");
 const WithdrawHistory = require("../models/withdrawHistory");
-
+const ShareRevenue = require("../models/shareholderRevenue");
 exports.listAllWithdraw = async (req, res) => {
   try {
     let result = await Withdraw.find({ isDeleted: false }).populate(
@@ -35,7 +35,7 @@ exports.createWithdraw = async (req, res, next) => {
     const check = await Withdraw.find({
       relatedShareRevenue: req.body.relatedShareRevenue,
     });
-    console.log(check, "checking");
+    console.log(req.body.remainAmount, "req.body.remainAmount");
     if (check[0]) {
       // console.log(check, "checking in if state");
       const firstCheck =
@@ -50,6 +50,23 @@ exports.createWithdraw = async (req, res, next) => {
       } else {
         const withdrawHistory = new WithdrawHistory(req.body);
         const withdrawHistoryResult = await withdrawHistory.save();
+        if (req.body.remainAmount) {
+          console.log(req.body.remainAmount, "req.body.remainAmount");
+          const newData = {
+            remainAmount: req.body.remainAmount,
+          };
+          const shareRevenue = await ShareRevenue.findOneAndUpdate(
+            { _id: req.body.relatedShareRevenue },
+            newData,
+            { new: true }
+          );
+          console.log(shareRevenue, "shareRevenue");
+          // res.status(200).send({
+          //   message: "ShareHolder Revenue update remain success",
+          //   success: true,
+          //   data: shareRevenue,
+          // });
+        }
         console.log(
           check.reduce((acc, curr) => {
             return acc + curr.withdrawAmount;
@@ -63,9 +80,7 @@ exports.createWithdraw = async (req, res, next) => {
           withdrawAmount:
             check[check.length - 1].withdrawAmount +
             parseInt(req.body.withdrawAmount),
-          remainAmount: check.reduce((acc, curr) => {
-            acc + curr.remainAmount;
-          }, 0),
+          remainAmount: req.body.remainAmount,
           remark: check[check.length - 1].remark,
           isDeleted: check[check.length - 1].isDeleted,
           createdAt: check[check.length - 1].createdAt,
@@ -77,11 +92,6 @@ exports.createWithdraw = async (req, res, next) => {
           newData,
           { new: true }
         );
-        res.status(200).send({
-          message: "Withdraw create success",
-          success: true,
-          data: result,
-        });
 
         console.log(withdrawHistoryResult, "withdrawHistoryResult");
         res.status(200).send({
@@ -93,6 +103,23 @@ exports.createWithdraw = async (req, res, next) => {
     } else {
       const withdrawHistory = new WithdrawHistory(req.body);
       const withdrawHistoryResult = await withdrawHistory.save();
+      if (req.body.remainAmount) {
+        console.log(req.body.remainAmount, "req.body.remainAmount");
+        const newData = {
+          remainAmount: req.body.remainAmount,
+        };
+        const shareRevenue = await ShareRevenue.findOneAndUpdate(
+          { _id: req.body.relatedShareRevenue },
+          newData,
+          { new: true }
+        );
+        console.log(shareRevenue, "shareRevenue");
+        // res.status(200).send({
+        //   message: "ShareHolder Revenue update remain success",
+        //   success: true,
+        //   data: shareRevenue,
+        // });
+      }
       const newRevenue = new Withdraw(req.body);
       const result = await newRevenue.save();
       res.status(200).send({

@@ -28,6 +28,11 @@ let ShareHolderRevenueSchema = new Schema({
     required: true,
     default: 0,
   },
+  remainAmount: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   netProfit: {
     type: Number,
     required: true,
