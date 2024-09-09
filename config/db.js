@@ -8,7 +8,7 @@ const config = {
     app: {
       name: "Skin-Studio",
     },
-    db: "mongodb+srv://pyaephyokwintech:ko1996thandar129196@kwintechnologies2.ltn2iio.mongodb.net/brilliant",
+    db: "mongodb+srv://pyaephyokwintech:ko1996thandar129196@kwintechnologies2.ltn2iio.mongodb.net/vzo-backend",
     uploadsURI: [
       "./uploads/cherry-k/img",
       "./uploads/cherry-k/excel",
@@ -36,7 +36,7 @@ const config = {
     app: {
       name: "Clinic-Denovo",
     },
-    db: "mongodb+srv://pyaephyokwintech:ko1996thandar129196@kwintechnologies2.ltn2iio.mongodb.net/brilliant",
+    db: "mongodb+srv://pyaephyokwintech:ko1996thandar129196@kwintechnologies2.ltn2iio.mongodb.net/vzo-backend",
     uploadsURI: [
       "./uploads/cherry-k/img",
       "./uploads/cherry-k/excel",
