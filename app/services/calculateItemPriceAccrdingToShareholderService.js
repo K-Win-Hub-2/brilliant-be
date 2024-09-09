@@ -2,12 +2,14 @@
 const itemAndShareHolder = require("../models/itemAndShareHolder")
 const itemIncomeTotal = require("../models/itemIncomeTotal")
 const moment = require("moment-timezone")
+const { calculateItemWithShareholder } = require("../helper/calculateItemWithShareholderIdHelper")
 
 exports.calcuateItemPriceAccordingToShareholderService = async (data) => {
     let { relatedItem, relatedShareHolder, startDate, endDate } = data
     let result = []
     let total = {}
     let query = { isDeleted: false }
+    !relatedItem  && !relatedShareHolder ? query.date = { $gte: moment.tz("Asia/Yangon").startOf("day").format() , $lt: moment.tz("Asia/Yangon").startOf("day").format() } : ""
     startDate && endDate ? query.date = { $gte: moment.tz(startDate, "Asia/Yangon").startOf("day").format(), $lte: moment.tz(endDate, "Asia/Yangon").startOf("day").format() } : ""    // filter items in itemIncome
     console.log("query",query)
     if(relatedItem){
@@ -40,35 +42,17 @@ exports.calcuateItemPriceAccordingToShareholderService = async (data) => {
         // const itemIncomeResult = await itemIncomeTotal.find(query).populate("relatedItem")
         const shareHolderById = await itemAndShareHolder.find({relatedShareHolder: relatedShareHolder}).populate("relatedShareHolder")
         if(shareHolderById.length > 0){
-            for(const shareHolder of shareHolderById){
-                let shareHolderAndItemData = { percent: shareHolder.percent, shareHolderName: shareHolder.relatedShareHolder.name }
-                const Item = shareHolder.relatedItem.toString()
-                query.relatedItem = Item
-                const itemIncomeResult = await itemIncomeTotal.find(query).populate("relatedItem")
-                const itemIncome = {}
-                itemIncomeResult.forEach(item=>{
-                    const purchasePrice = item.purchasePrice || 0
-                    const quantity = item.quantity || 0
-                    const amount = item.amount || 0
-                    itemIncome["name"] = item.relatedItem.name
-                    itemIncome["purchasePrice"] = Number( itemIncome["purchasePrice"] || 0 ) + purchasePrice
-                    itemIncome["quantity"] = Number( itemIncome["quantity"] || 0 ) + quantity
-                    itemIncome["amount"] = Number( itemIncome["amount"] || 0 ) + amount
-                })
-                console.log("d",itemIncome,shareHolderAndItemData)
-                let revenueProfit = ( Number(itemIncome.amount) - Number(itemIncome.purchasePrice) )
-                let shareHolderProfit = Number(revenueProfit * shareHolderAndItemData.percent) / 100
-                let profitwithoutGross  = (Number(itemIncome.amount) * Number(shareHolderAndItemData.percent) )/ 100
-                result.push({name: itemIncome.name, totalSellingAmount: itemIncome.amount, totalPurchaseAmount: itemIncome.purchasePrice, revenueProfit: revenueProfit, shareHolderPercent: shareHolderAndItemData.percent, shareHolder: shareHolderAndItemData.shareHolderName, shareHolderProfit: shareHolderProfit, profitWithoutGross: profitwithoutGross})
-            }
+            const calculateFunction = await calculateItemWithShareholder(query, shareHolderById)
+            result = calculateFunction.result, total = calculateFunction.total
         }
-        result.map(re=>{
-            total["totalSellingAmount"] = ( Number(total["totalSellingAmount"] ) || 0) + re.totalSellingAmount
-            total["totalPurchaseAmount"] = ( Number(total["totalPurchaseAmount"]) || 0) + re.totalPurchaseAmount
-            total["revenueProfit"] = ( Number(total["revenueProfit"]) || 0) + re.revenueProfit
-            total["shareHolderProfit"] = ( Number(total["shareHolderProfit"] ) || 0) + re.shareHolderProfit
-            total["profitWithoutGross"] = ( Number(total["profitWithoutGross"] ) || 0) + re.profitWithoutGross
-        })
+    }
+    //if there is no relatedItem and relatedShareHolder Id, then query with today date
+    if(!relatedItem && !relatedShareHolder){
+        const shareHolderById = await itemAndShareHolder.find().populate("relatedShareHolder")
+        if(shareHolderById.length > 0){
+            const calculateFunction = await calculateItemWithShareholder(query, shareHolderById)
+            result = calculateFunction.result, total = calculateFunction.total
+        }
     }
     return { data: result, total: total }
 }
