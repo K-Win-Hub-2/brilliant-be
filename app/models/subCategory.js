@@ -1,10 +1,9 @@
-'use strict';
+"use strict";
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.promise = global.Promise;
 const Schema = mongoose.Schema;
-const validator = require('validator');
-
+const validator = require("validator");
 
 let SubCategorySchema = new Schema({
   code: {
@@ -18,26 +17,26 @@ let SubCategorySchema = new Schema({
   },
   relatedCategory: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Categories',
+    ref: "SuperCategories",
   },
   createdAt: {
     type: Date,
     default: Date.now,
   },
   updatedAt: {
-    type: Date
+    type: Date,
   },
   isDeleted: {
     type: Boolean,
     required: true,
-    default: false
+    default: false,
   },
   relatedBranch: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Branches'
+    ref: "Branches",
   },
 });
 
-module.exports = mongoose.model('SubCategories', SubCategorySchema);
+module.exports = mongoose.model("SubCategories", SubCategorySchema);
 
 //Author: Kyaw Zaw Lwin

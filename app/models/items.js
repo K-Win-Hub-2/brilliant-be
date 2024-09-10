@@ -5,9 +5,8 @@ mongoose.promise = global.Promise;
 const Schema = mongoose.Schema;
 
 let ItemSchema = new Schema({
-  name: {
+  itemName: {
     type: String,
-    required: true,
   },
   code: {
     type: String,
@@ -49,19 +48,26 @@ let ItemSchema = new Schema({
   },
   reOrderQuantity: {
     type: Number,
+    default: 0,
   },
   relatedSuperCategory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "SuperCategories",
   },
   relatedShareHolder: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "shareholders",
+    shareholder_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "shareholders",
+    },
+    percent: Number,
   },
 
   relatedItemTitle: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ItemTitles",
+  },
+  description: {
+    type: String,
   },
   isDeleted: {
     type: Boolean,
