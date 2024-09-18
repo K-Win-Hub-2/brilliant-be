@@ -29,6 +29,9 @@ let WithdrawHistorySchema = new Schema({
   remark: {
     type: String,
   },
+  payment: {
+    type: String,
+  },
   isDeleted: {
     type: Boolean,
     required: true,

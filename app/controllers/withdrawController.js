@@ -2,6 +2,7 @@
 const Withdraw = require("../models/withdraw");
 const WithdrawHistory = require("../models/withdrawHistory");
 const ShareRevenue = require("../models/shareholderRevenue");
+
 exports.listAllWithdraw = async (req, res) => {
   try {
     let result = await Withdraw.find({ isDeleted: false }).populate(
@@ -9,6 +10,56 @@ exports.listAllWithdraw = async (req, res) => {
     );
     // console.log(result, "res");
     let count = await Withdraw.find({ isDeleted: false }).count();
+    res.status(200).send({
+      success: true,
+      count: count,
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).send({ error: true, message: "No Record Found!" });
+  }
+};
+
+exports.withdrawHistory = async (req, res) => {
+  try {
+    let result = await WithdrawHistory.find({ isDeleted: false }).populate({
+      path: "relatedShareRevenue",
+      model: "ShareHolderRevenue",
+      populate: {
+        path: "relatedShareHolder",
+        model: "shareholders",
+      },
+    });
+    // console.log(result, "res");
+    let count = await WithdrawHistory.find({ isDeleted: false }).count();
+    res.status(200).send({
+      success: true,
+      count: count,
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).send({ error: true, message: "No Record Found!" });
+  }
+};
+
+exports.withdrawHistoryFilter = async (req, res) => {
+  const { shareHolder, startDate, endDate } = req.body;
+  try {
+    let result = await WithdrawHistory.find({ isDeleted: false }).populate({
+      path: "relatedShareRevenue",
+      model: "ShareHolderRevenue",
+      populate: {
+        path: "relatedShareHolder",
+        model: "shareholders",
+      },
+    });
+    console.log(
+      result.filter(
+        (el) => el.relatedShareRevenue?.relatedShareHolder._id === shareHolder
+      ),
+      "res"
+    );
+    let count = await WithdrawHistory.find({ isDeleted: false }).count();
     res.status(200).send({
       success: true,
       count: count,

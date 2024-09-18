@@ -13,8 +13,8 @@ let WithdrawSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  withdrawDate:{
-    type:Date
+  withdrawDate: {
+    type: Date,
   },
   withdrawAmount: {
     type: Number,
@@ -27,6 +27,9 @@ let WithdrawSchema = new Schema({
     default: 0,
   },
   remark: {
+    type: String,
+  },
+  payment: {
     type: String,
   },
   isDeleted: {

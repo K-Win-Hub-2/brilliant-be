@@ -53,6 +53,17 @@ let ShareHolderRevenueSchema = new Schema({
   remark: {
     type: String,
   },
+  expenseArray: [
+    {
+      item_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Expenses",
+      },
+      amount: {
+        type: Number,
+      },
+    },
+  ],
   isDeleted: {
     type: Boolean,
     required: true,

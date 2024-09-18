@@ -1,9 +1,12 @@
 "use strict";
 const ShareRevenue = require("../models/shareholderRevenue");
+const Expense = require("../models/expense");
 
 exports.listAllShareRevenue = async (req, res) => {
   try {
-    let result = await ShareRevenue.find({ isDeleted: false }).populate('relatedShareHolder');
+    let result = await ShareRevenue.find({ isDeleted: false }).populate(
+      "relatedShareHolder"
+    );
     console.log(result, "res");
     let count = await ShareRevenue.find({ isDeleted: false }).count();
     res.status(200).send({
@@ -28,6 +31,7 @@ exports.getShareRevenue = async (req, res) => {
 
 exports.createShareRevenue = async (req, res, next) => {
   try {
+    console.log(req.body, "req.body");
     const newRevenue = new ShareRevenue(req.body);
     const result = await newRevenue.save();
     res.status(200).send({

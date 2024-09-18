@@ -10,7 +10,10 @@ module.exports = (app) => {
     .post(catchError(withdraw.createWithdraw))
     .put(catchError(withdraw.updateWithdraw))
     .get(catchError(withdraw.listAllWithdraw));
-
+  app.route("/api/withdraw/history").get(catchError(withdraw.withdrawHistory));
+  app
+    .route("/api/withdraw/history/filter")
+    .get(catchError(withdraw.withdrawHistoryFilter));
   app
     .route("/api/withdraw/:id")
     .get(catchError(withdraw.getWithdraw))
