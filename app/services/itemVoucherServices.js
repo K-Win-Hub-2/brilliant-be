@@ -119,7 +119,7 @@ exports.getAllItemVoucher = async (datas) => {
     .skip(paginationHelpers.skip)
     .sort(sortByAscending)
     .populate(
-      "relatedBank relatedCash relatedItem.item_id relatedPackage.item_id"
+      "relatedBank relatedCash relatedItem.item_id relatedPackage.item_id relatedCustomer"
     )
     .populate({ path: "secondAccount", populate: { path: "relatedHeader" } })
     .exec();
@@ -150,7 +150,7 @@ exports.createItemVoucher = async (datas) => {
 exports.getItemVoucherById = async (id) => {
   let result = await itemVoucher
     .findById(id)
-    .populate("relatedSuperCategory relatedItemTitle");
+    .populate("relatedSuperCategory relatedItemTitle relatedCustomer");
   return result;
 };
 
