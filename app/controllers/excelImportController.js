@@ -1,7 +1,10 @@
 "use strict";
 const xlsx = require("xlsx");
 const items = require("../models/items");
+const ItemTitle = require("../models/itemTitle");
 const superCategoryModels = require("../models/superCategory");
+const subCategoryModels = require("../models/subCategory");
+const Brand = require("../models/brand");
 const shareHoldersModels = require("../models/shareHolder");
 const mongoose = require("mongoose");
 
@@ -11,30 +14,27 @@ exports.excelImport = async (req, res) => {
     const workSheet = workbook.Sheets[workbook.SheetNames[0]];
     const data = xlsx.utils.sheet_to_json(workSheet);
 
-    console.log("workSheet", workSheet, "xlsx", xlsx, "data", data);
+    console.log("data", data);
 
     for (const result of data) {
-      const code = result[0].code;
-
-      if (!code) {
-        console.error(`Item not found: ${code}`);
-        continue;
-      }
+      const superCategory = result.superCategory.split(" (WS)")[0];
+      const superID = await superCategoryModels.findOne({
+        name: superCategory,
+      });
+      const itemTitle = result.title.split(" (WS)")[0];
+      const itemTitleID = await ItemTitle.findOne({
+        name: itemTitle,
+      });
 
       const item_name = result.name;
-      const currentQty = result.currentQty;
-      // const barcode = result.barcode.split(" (WS)")[0];
-      const fromUnit = result.from_unit;
-      const toUnit = result.to_unit;
+      const currentQty = result.currentQuantity;
+      const code = result.code;
+      const fromUnit = result.fromUnit;
+      const toUnit = result.toUnit;
       const purchasePrice = result.purchase_price;
       const sellingPrice = result.selling_price;
-      const shareholderName = result.shareholder;
+      const shareholderName = result.shareholder.split(" (WS)")[0];
       const title = result.title;
-      const superCategoryName = result.superCategory.split(" (WS)")[0];
-
-      const superCategory = await superCategoryModels.findOne({
-        name: { $regex: new RegExp(`^${superCategoryName}$`, "i") },
-      });
 
       if (!superCategory) {
         console.error(`SuperCategory not found: ${superCategoryName}`);
@@ -42,15 +42,15 @@ exports.excelImport = async (req, res) => {
       }
 
       let shareholder = await shareHoldersModels.findOne({
-        name: { $regex: new RegExp(`^${shareholderName}$`, "i") },
+        name: shareholderName,
       });
 
-      if (!shareholder && shareholderName) {
-        // If shareholder doesn't exist, create a new one
-        shareholder = await shareHoldersModels.create({
-          name: shareholderName,
-        });
-      }
+      // if (!shareholder && shareholderName) {
+      //   // If shareholder doesn't exist, create a new one
+      //   shareholder = await shareHoldersModels.create({
+      //     name: shareholderName,
+      //   });
+      // }
 
       const existingItem = await items.findOne({
         title: title,
@@ -62,55 +62,40 @@ exports.excelImport = async (req, res) => {
           { _id: existingItem._id },
           {
             $set: {
-              code: barcode,
+              code: code,
               fromUnit: fromUnit,
               toUnit: toUnit,
               totalUnit: (currentQty * toUnit) / fromUnit,
               currentQty: currentQty,
               sellingPrice: sellingPrice,
               purchasePrice: purchasePrice,
-              relatedSuperCategory: superCategory._id,
-              superCategoryName: superCategoryName,
+              relatedSuperCategory: superID._id,
+              relatedItemTitle: itemTitleID._id,
               "relatedShareHolder.shareholder_id": shareholder
                 ? shareholder._id
                 : null,
             },
           }
         );
-        console.log(`Updated item: ${item_namee}`);
+        // console.log(`Updated item: ${item_name}`);
       } else {
         await items.create({
           itemName: item_name,
-          code: barcode,
+          code: code,
           fromUnit: fromUnit,
           toUnit: toUnit,
           totalUnit: (currentQty * toUnit) / fromUnit,
           currentQty: currentQty,
           sellingPrice: sellingPrice,
           purchasePrice: purchasePrice,
-          relatedSuperCategory: superCategory._id,
-          superCategoryName: superCategoryName,
+          relatedSuperCategory: superID._id,
+          relatedItemTitle: itemTitleID._id,
           "relatedShareHolder.shareholder_id": shareholder
             ? shareholder._id
             : null,
         });
-        console.log(`Created new item: ${item_name}`);
+        // console.log(`Created new item: ${item_name}`);
       }
-
-      console.log(
-        "this is data of relatedid",
-        item_name,
-        splitCategory,
-        currentQty,
-        barcode,
-        fromUnit,
-        toUnit,
-        purchasePrice,
-        sellingPrice,
-        team,
-        other,
-        superCategory
-      );
     }
 
     res.status(200).json({ success: true, message: "Import successful" });
@@ -129,43 +114,48 @@ exports.TitleExcelImport = async (req, res) => {
     for (const result of data) {
       const superCategory = result.superCategory.split(" (WS)")[0];
       const subCategory = result.subCategory.split(" (WS)")[0];
+      const superID = await superCategoryModels.findOne({
+        name: superCategory,
+      });
+      const subID = await subCategoryModels.findOne({ name: subCategory });
       const brand = result.brand.split(" (WS)")[0];
-
+      const brandID = await Brand.findOne({ name: brand });
+      // console.log(`superID:`, superID);
       const code = result.code;
       const title = result.title;
       const description = result.description;
 
-      const existingTitle = await superCategoryModels.findOne({
+      const existingTitle = await ItemTitle.findOne({
         name: title,
-        superCategory: superCategory,
-        subCategory: subCategory,
+        relatedCategory: superID._id,
+        relatedSubCategory: subID._id,
       });
 
       if (existingTitle) {
-        await superCategoryModels.updateOne(
+        await ItemTitle.updateOne(
           { _id: existingTitle._id },
           {
             $set: {
               code: code,
               description: description,
-              brand: brand,
-              superCategory: superCategory,
-              subCategory: subCategory,
-              title: title,
+              relatedBrand: brandID._id,
+              relatedCategory: superID._id,
+              relatedSubCategory: subID._id,
+              name: title,
             },
           }
         );
         console.log(`Updated title: ${title}`);
       } else {
-        await superCategoryModels.create({
+        const resFinal = await ItemTitle.create({
           code: code,
           description: description,
-          brand: brand,
-          superCategory: superCategory,
-          subCategory: subCategory,
-          title: title,
+          relatedBrand: brandID._id,
+          relatedCategory: superID._id,
+          relatedSubCategory: subID._id,
+          name: title,
         });
-        console.log(`Created new title: ${title}`);
+        // console.log(`Created new title:`, resFinal);
       }
     }
 
