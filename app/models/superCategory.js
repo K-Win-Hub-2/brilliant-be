@@ -1,17 +1,28 @@
-'use strict';
+"use strict";
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 mongoose.promise = global.Promise;
 const Schema = mongoose.Schema;
-
 
 let SuperCategoriesSchema = new Schema({
   name: {
     type: String,
-    required: true
+    required: true,
   },
   code: {
-    type: String
+    type: String,
+  },
+  description: {
+    type: String,
+  },
+  superCategory: {
+    type: String,
+  },
+  title: {
+    type: String,
+  },
+  subCategory: {
+    type: String,
   },
   createdAt: {
     type: Date,
@@ -20,10 +31,10 @@ let SuperCategoriesSchema = new Schema({
   isDeleted: {
     type: Boolean,
     required: true,
-    default: false
-  }
+    default: false,
+  },
 });
 
-module.exports = mongoose.model('SuperCategories', SuperCategoriesSchema);
+module.exports = mongoose.model("SuperCategories", SuperCategoriesSchema);
 
 //Author: Oakar Kyaw

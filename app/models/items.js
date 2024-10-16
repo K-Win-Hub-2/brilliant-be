@@ -54,6 +54,9 @@ let ItemSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "SuperCategories",
   },
+  superCategoryName: {
+    type: String,
+  },
   relatedShareHolder: {
     shareholder_id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -61,7 +64,9 @@ let ItemSchema = new Schema({
     },
     percent: Number,
   },
-
+  title: {
+    type: String,
+  },
   relatedItemTitle: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ItemTitles",
