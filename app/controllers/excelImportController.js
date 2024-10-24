@@ -31,10 +31,11 @@ exports.excelImport = async (req, res) => {
       const code = result.code;
       const fromUnit = result.fromUnit;
       const toUnit = result.toUnit;
-      const purchasePrice = result.purchase_price;
-      const sellingPrice = result.selling_price;
+      const purchasePrice = result.purchasePrice;
+      const sellingPrice = result.sellingPrice;
       const shareholderName = result.shareholder.split(" (WS)")[0];
-      const title = result.title;
+      const title = result.title.split(" (WS)")[0];
+      const percent = result.percent;
 
       if (!superCategory) {
         console.error(`SuperCategory not found: ${superCategoryName}`);
@@ -53,8 +54,9 @@ exports.excelImport = async (req, res) => {
       // }
 
       const existingItem = await items.findOne({
-        title: title,
+        relatedItemTitle: itemTitleID._id,
         itemName: item_name,
+        relatedSuperCategory: superID._id,
       });
 
       if (existingItem) {
@@ -66,14 +68,16 @@ exports.excelImport = async (req, res) => {
               fromUnit: fromUnit,
               toUnit: toUnit,
               totalUnit: (currentQty * toUnit) / fromUnit,
-              currentQty: currentQty,
+              currentQuantity: currentQty,
               sellingPrice: sellingPrice,
               purchasePrice: purchasePrice,
               relatedSuperCategory: superID._id,
               relatedItemTitle: itemTitleID._id,
-              "relatedShareHolder.shareholder_id": shareholder
-                ? shareholder._id
-                : null,
+              description: result.description,
+              relatedShareHolder: {
+                shareholder_id: shareholder ? shareholder._id : null,
+                percent: percent,
+              },
             },
           }
         );
@@ -85,14 +89,16 @@ exports.excelImport = async (req, res) => {
           fromUnit: fromUnit,
           toUnit: toUnit,
           totalUnit: (currentQty * toUnit) / fromUnit,
-          currentQty: currentQty,
+          currentQuantity: currentQty,
           sellingPrice: sellingPrice,
           purchasePrice: purchasePrice,
           relatedSuperCategory: superID._id,
           relatedItemTitle: itemTitleID._id,
-          "relatedShareHolder.shareholder_id": shareholder
-            ? shareholder._id
-            : null,
+          description: result.description,
+          relatedShareHolder: {
+            shareholder_id: shareholder ? shareholder._id : null,
+            percent: percent,
+          },
         });
         // console.log(`Created new item: ${item_name}`);
       }
