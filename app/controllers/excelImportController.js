@@ -130,7 +130,6 @@ exports.TitleExcelImport = async (req, res) => {
       const code = result.code;
       const title = result.title;
       const description = result.description;
-
       const existingTitle = await ItemTitle.findOne({
         name: title,
         relatedCategory: superID._id,

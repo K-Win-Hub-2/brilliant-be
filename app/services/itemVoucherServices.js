@@ -10,6 +10,8 @@ const { paginationHelper } = require("../helper/paginationHelper");
 const { generateVoucherCode } = require("../helper/voucherCodeGeneratorHelper");
 const itemVoucher = require("../models/itemVoucher");
 const { createDebt } = require("./debtService");
+const AccountList = require("../models/accountingList");
+const Items = require("../models/items");
 const moment = require("moment-timezone");
 
 exports.getAllItemVoucher = async (datas) => {
@@ -134,6 +136,102 @@ exports.createItemVoucher = async (datas) => {
   await substractCurrentQuantityOfItem(datas.relatedItem);
   await substractCurrentQuantityOfItemPackageArray(datas.relatedPackage);
   await ItemIncome(datas.relatedItem, datas.relatedPackage, datas.createdAt);
+
+  if (datas.relatedCash) {
+    const Acc = await AccountList.findById(datas.relatedCash);
+    console.log(Acc, "Acc");
+    await AccountList.findByIdAndUpdate(
+      datas.relatedCash,
+      {
+        amount: parseInt(Acc.amount) + parseInt(datas.totalPaidAmount),
+      },
+      { new: true }
+    );
+  } else {
+    const Acc = await AccountList.findById(datas.relatedBank);
+    console.log(Acc, "Accsdddfasfsfasd");
+    await AccountList.findByIdAndUpdate(
+      datas.relatedBank,
+      {
+        amount: parseInt(Acc.amount) + parseInt(datas.totalPaidAmount),
+      },
+      { new: true }
+    );
+  }
+
+  const resultTeamArray = await Items.find({
+    _id: {
+      $in: datas.relatedItem.map((i) => i.item_id),
+    },
+    "relatedShareHolder.shareholder_id": "66e047a90718e97089ca7d83",
+  });
+  const resultOtherArray = await Items.find({
+    _id: {
+      $in: datas.relatedItem.map((i) => i.item_id),
+    },
+    "relatedShareHolder.shareholder_id": "66e047f90718e97089ca7d8f",
+  });
+  console.log(resultTeamArray, "resultTeamArray");
+  console.log(resultOtherArray, "resultOtherArray");
+
+  if (resultTeamArray[0]) {
+    const filterToIncreaseAmount = datas.relatedItem.filter((el) =>
+      resultTeamArray.map((i) => i._id === el.item_id)
+    );
+
+
+    // console.log(filterToIncreaseAmount, "filterToIncreaseAmount");
+    const SumTeamAmount = filterToIncreaseAmount.reduce((a, b) => a + ((b.price * b.quantity) - b.discount), 0)
+    // console.log(SumTeamAmount, "filterToIncreaseAmount");
+
+    const findID = await AccountList.findOne({ subHeader: "Team" });
+    const finalForTeam = await AccountList.findByIdAndUpdate(
+      findID._id,
+      {
+        amount: parseInt(findID.amount) + parseInt(SumTeamAmount),
+      },
+      { new: true }
+    );
+      // console.log(finalForTeam, "finalForTeam");
+  } else {
+    const filterToIncreaseAmount = datas.relatedItem.filter((el) =>
+      resultOtherArray.map((i) => i._id === el.item_id)
+    );
+
+    // console.log(filterToIncreaseAmount, "filterToIncreaseAmount");
+    const SumOtherAmount = filterToIncreaseAmount.reduce(
+      (a, b) => a + (b.price * b.quantity - b.discount),
+      0
+    );
+    // console.log(SumTeamAmount, "filterToIncreaseAmount");
+
+    const findID = await AccountList.findOne({ subHeader: "Other" });
+    const finalForOther = await AccountList.findByIdAndUpdate(
+      findID._id,
+      {
+        amount: parseInt(findID.amount) + parseInt(SumOtherAmount),
+      },
+      { new: true }
+    );
+    // console.log(finalForOther, "finalForTeam");
+  }
+  // const resultArray = multiItem ? [multiItem] : [];
+
+  // const searchTeam = resultArray.filter(
+  //   (el) => el.relatedShareHolder.shareholder_id === "66e047a90718e97089ca7d83"
+  // );
+  // console.log(searchTeam, "searchTeam");
+  // const checkItems = searchTeam.filter((el) => el._id === item.item_id);
+  // console.log(checkItems, "checkItems");
+  // const data = {
+  //     relatedItem: item.item_id,
+  //     date: date,
+  //     purchasePrice: Number(purchasePrice) * Number(item.quantity) ,
+  //     quantity: item.quantity,
+  //     amount: Number(item.price) * Number(item.quantity)
+  // }
+  // console.log("data", data)
+
   let result = await itemVoucher.create(datas);
   // creating debt if balance exist
   if (datas.balance)
