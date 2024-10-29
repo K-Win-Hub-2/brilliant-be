@@ -16,7 +16,7 @@ exports.calcuateItemPriceAccordingToShareholderService = async (data) => {
         let itemIncome = {}
         query.relatedItem = relatedItem
         const itemIncomeResult = await itemIncomeTotal.find(query).populate("relatedItem")
-        const shareHolderByItemId = await itemAndShareHolder.find({relatedItem: relatedItem}).populate("relatedShareHolder")
+        const shareHolderByItemId = await itemAndShareHolder.find({relatedItem: relatedItem}).populate("relatedShareHolder.shareholder_id")
         if(itemIncomeResult.length > 0){
             itemIncomeResult.forEach(income => {
                 const purchasePrice = income.purchasePrice || 0

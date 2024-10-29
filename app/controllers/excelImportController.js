@@ -7,6 +7,7 @@ const subCategoryModels = require("../models/subCategory");
 const Brand = require("../models/brand");
 const shareHoldersModels = require("../models/shareHolder");
 const mongoose = require("mongoose");
+const { createItemAndShareHolder } = require("../services/itemAndShareHolderService");
 
 exports.excelImport = async (req, res) => {
   try {
@@ -83,7 +84,7 @@ exports.excelImport = async (req, res) => {
         );
         // console.log(`Updated item: ${item_name}`);
       } else {
-        await items.create({
+        const finalRes = await items.create({
           itemName: item_name,
           code: code,
           fromUnit: fromUnit,
@@ -101,6 +102,12 @@ exports.excelImport = async (req, res) => {
           },
         });
         // console.log(`Created new item: ${item_name}`);
+        const itemShareHolderResult = await createItemAndShareHolder({
+          relatedShareHolder: shareholder._id,
+          percent: percent,
+          relatedItem: finalRes._id,
+        });
+        console.log("itemShareHolderResult", itemShareHolderResult);
       }
     }
 

@@ -11,6 +11,7 @@ exports.calculateItemWithShareholder = async (query, shareHolderIdArray) => {
         query.relatedItem = Item
         const itemIncomeResult = await itemIncomeTotal.find(query).populate("relatedItem")
         const itemIncome = {}
+        console.log(itemIncomeResult, "itemIncomeResult");
         itemIncomeResult.forEach(item=>{
             const purchasePrice = item.purchasePrice || 0
             const quantity = item.quantity || 0
