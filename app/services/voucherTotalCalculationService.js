@@ -14,7 +14,8 @@ exports.voucherTotalCalculationService = async (data) => {
         //loop to calculate purchase price
         datas.map(({ relatedItem, relatedPackage})=>{
             if(relatedItem.length > 0){
-                relatedItem.map(items=>{
+                relatedItem.map(items => {
+                    console.log(datas, "items");
                     purchase += items.item_id.purchasePrice * items.quantity
                 })
             }

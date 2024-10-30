@@ -86,3 +86,24 @@ exports.activateCategory = async (req, res, next) => {
     return res.status(500).send({ error: true, message: error.message });
   }
 };
+
+exports.listAllFilter = async (req, res) => {
+  let data = req.body
+  console.log(data,'data')
+  try {
+    let result = await ShareRevenue.find({ isDeleted: false, startDate: data.startDate,
+      endDate: data.endDate,
+      relatedShareHolder:data.relatedShareHolder }).populate(
+      "relatedShareHolder"
+    );
+    console.log(result, "res");
+  
+    res.status(200).send({
+      success: true,
+    
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).send({ error: true, message: "No Record Found!" });
+  }
+};

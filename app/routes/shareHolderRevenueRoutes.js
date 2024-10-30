@@ -15,4 +15,8 @@ module.exports = (app) => {
     .route("/api/share-revenue/:id")
     .get(catchError(shareRevenue.getShareRevenue))
     .delete(catchError(shareRevenue.deleteShareRevenue));
+
+  app
+    .route("/api/share-revenue/filter")
+    .get(catchError(shareRevenue.listAllFilter));
 };

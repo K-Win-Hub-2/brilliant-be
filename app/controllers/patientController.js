@@ -45,8 +45,28 @@ exports.getCustomer = async (req, res) => {
 };
 
 exports.createCustomer = async (req, res, next) => {
+    let data = req.body;
   try {
-    const newcustomer = new Patient(req.body);
+    //prepare CUS-ID
+    const latestDocument = await Patient.find({}, { seq: 1 })
+      .sort({ _id: -1 })
+      .limit(1)
+      .exec();
+    console.log(latestDocument);
+    const initials = getInitialsInUpperCase(data.name);
+    if (latestDocument.length === 0) {
+      data = { ...data, seq: "1", patientID: "CUS-" + initials + "-1" };
+    } // if seq is undefined set initial patientID and seq
+    console.log(data);
+    if (latestDocument.length) {
+      const increment = latestDocument[0].seq + 1;
+      data = {
+        ...data,
+        patientID: "CUS-" + initials + "-" + increment,
+        seq: increment,
+      };
+    }
+    const newcustomer = new Patient(data);
     const result = await newcustomer.save();
     res.status(200).send({
       message: "Customer create success",

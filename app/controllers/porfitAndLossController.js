@@ -278,7 +278,7 @@ exports.getTotalWithDateFilter = async (req, res) => {
         const msTotalAmount = MedicineSaleResult.reduce((total, sale) => total + sale.msPaidAmount, 0);
         const tvTotalAmount = TreatmentVoucherResult.reduce((total, sale) => total + sale.paidAmount + sale.totalPaidAmount, 0);
         const exTotalAmount = ExpenseResult.reduce((total, sale) => {
-            let current = currencyList.filter(currency => currency.code === sale.finalCurrency)[0].exchangeRate
+            let current = currencyList.filter(currency => currency.code === sale.finalCurrency)[0]?.exchangeRate
             let ans = current * sale.finalAmount
             return total + ans
         }, 0);
